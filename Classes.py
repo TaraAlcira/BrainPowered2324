@@ -86,6 +86,14 @@ class Data():
         df_filter[marker_column_names] = df_encoded[marker_column_names]
         return df_filter
 
+    def get_mne_raw(self, file_xml, file_mat):
+        data = self.get_df_without_marker(file_xml, file_mat)
+        ch_names = list(data.columns.values)
+        ch_types = ['eeg' for _ in range(len(ch_names))]
+        info = mne.create_info(ch_names=ch_names, sfreq=self.SAMPLING_FREQUENCY, ch_types=ch_types)
+        raw = mne.io.RawArray(data.to_numpy().T, info)
+        return raw
+
     def get_markers(self, file_xml, file_mat):
         return self.get_df_with_marker(file_xml, file_mat)['marker']
 
@@ -114,5 +122,5 @@ class Data():
         return np.insert(self.find_marker_starts(file_xml, file_mat), 1, 0, axis=1)
 
     def get_epochs(self, file_xml, file_mat):
-        return mne.Epochs(self.get_df_without_marker(file_xml, file_mat), events=self.get_events_matrix(file_xml, file_mat), event_id=None, tmin=0, tmax=5, baseline=None, preload=True)
+        return mne.Epochs(self.get_mne_raw(file_xml, file_mat), events=self.get_events_matrix(file_xml, file_mat), event_id=None, tmin=0, tmax=5, baseline=None, preload=True)
 

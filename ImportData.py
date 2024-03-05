@@ -42,6 +42,6 @@ data = Data(data_directory_matlab = data_directory_mat,
             q = Q)
 
 for xml, mat in data.get_files():
-    df = data.get_filtered_df(xml, mat)
+    df = data.get_epochs(xml, mat)
     print(df)
     break
