@@ -2,6 +2,7 @@
 import os
 import scipy.io
 import pandas as pd
+import numpy as np
 # import matplotlib.pyplot as plt
 # import xmltodict
 # import xmljson
@@ -9,6 +10,7 @@ import pandas as pd
 # from xml.dom import minidom
 from scipy import signal
 from bs4 import BeautifulSoup
+import mne
 
 
 class Data():
@@ -33,7 +35,7 @@ class Data():
 
     def get_files(self):
         """
-        Returns the mat files, each with their corresponding xml file from the data directories.
+        Returns tuples (xml, mat) with the mat files, each with their corresponding xml file from the data directories.
         """
 
         subject_files_mat = os.listdir(self.data_directory_mat)
@@ -83,3 +85,34 @@ class Data():
         marker_column_names = list(set(df_encoded.columns.values) - set(df.columns.values))
         df_filter[marker_column_names] = df_encoded[marker_column_names]
         return df_filter
+
+    def get_markers(self, file_xml, file_mat):
+        return self.get_df_with_marker(file_xml, file_mat)['marker']
+
+    def find_marker_starts(self, file_xml, file_mat):
+        """
+        Find the indices where markers start in a numpy array.
+
+        Args:
+          series: A pandas Series objects marker column
+
+        Returns:
+          A numpy array of shape (n_events, 2) where the first column is the index
+          at which the marker starts, and the second column the marker it is about.
+        """
+        # Find the indices where the data changes from non-marker to marker.
+        data = self.get_markers(file_xml, file_mat).to_numpy().astype(int)
+        marker_starts = np.flatnonzero(np.diff(data) > 0) + 1
+
+        # Get the markers at the start indices.
+        markers = data[marker_starts]
+
+        # Combine the start indices and markers into a single array.
+        return np.vstack((marker_starts, markers)).T
+
+    def get_events_matrix(self, file_xml, file_mat):
+        return np.insert(self.find_marker_starts(file_xml, file_mat), 1, 0, axis=1)
+
+    def get_epochs(self, file_xml, file_mat):
+        return mne.Epochs(self.get_df_without_marker(file_xml, file_mat), events=self.get_events_matrix(file_xml, file_mat), event_id=None, tmin=0, tmax=5, baseline=None, preload=True)
+
