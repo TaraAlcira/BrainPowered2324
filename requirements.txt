@@ -1,3 +1,4 @@
+braindecode==0.8
 xmltodict==0.13.0
 xmljson==0.2.1
 lxml==5.1.0
