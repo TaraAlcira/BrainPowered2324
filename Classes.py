@@ -97,6 +97,9 @@ class Data():
     def get_markers(self, file_xml, file_mat):
         return self.get_df_with_marker(file_xml, file_mat)['marker']
 
+    def get_channels(self, file_xml, file_mat):
+        return self.get_df_without_marker(file_xml, file_mat).columns.values
+
     def find_marker_starts(self, file_xml, file_mat):
         """
         Find the indices where markers start in a numpy array.
