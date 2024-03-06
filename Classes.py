@@ -1,13 +1,7 @@
-# add your own imports if needed
 import os
 import scipy.io
 import pandas as pd
 import numpy as np
-# import matplotlib.pyplot as plt
-# import xmltodict
-# import xmljson
-# import json
-# from xml.dom import minidom
 from scipy import signal
 from bs4 import BeautifulSoup
 import mne
