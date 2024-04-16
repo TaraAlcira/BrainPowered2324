@@ -48,8 +48,8 @@ clf.initialize()
 clf.module.load_state_dict(torch.load("model.pth"))
 
 # com port connection
-COMport = "COM7"
-ser = serial.Serial(COMport, 38400, serial.EIGHTBITS, serial.PARITY_NONE, serial.STOPBITS_ONE)
+#COMport = "COM7"
+#ser = serial.Serial(COMport, 38400, serial.EIGHTBITS, serial.PARITY_NONE, serial.STOPBITS_ONE)
 
 # look for stream
 print("Looking for streams")
@@ -60,9 +60,10 @@ print("test")
 inlet = StreamInlet(streams[0])
 print("Connected to 'EventIDE_Signal_Stream' stream")
 
+concsample=np.zeros((0,19))
 # Read out stream
 while True:
-    print("test2`3")
+    print("test2")
     time.sleep(1)
     sample, timestamp = inlet.pull_chunk()
     if len(sample) == 0:
@@ -71,17 +72,26 @@ while True:
         # sample.append(0)
     print("test3")
     print(f"Received sample at time {timestamp[0]}:")
-
     # # classify
-    # sample = np.array(sample)
-    # sample = sample.reshape(1, 19, 2501)
-    # sample = torch.tensor(sample)
-    # sample = sample.float()
-    # sample = sample.to(device)
-    # sample = clf.predict(sample)
+    print(concsample.shape)
+    print(len(sample))
+    concsample=np.vstack((concsample, sample))
+    if concsample.shape[0]>2501:
+        concsample = concsample[concsample.shape[0]-2501:]
+        
+        predsample = concsample.reshape(1, 19, 2501)
+        predsample = torch.tensor(predsample)
+        predsample = predsample.float()
+        predsample = predsample.to(device)
+        pred = clf.predict(predsample)
+        print(concsample.shape)
+        print(pred)
+    #print(concsample[0])
+    
 
     # [print(subsample) for subsample in sample]
     # bytesample=bytearray(sample)
-    comsample = f"S{sample[0]}E"
-    print(sample[0])
-    ser.write(bytes(comsample, "utf-8"))
+    
+    #comsample = f"S{sample[0]}E"
+    #print(sample[0])
+    #ser.write(bytes(comsample, "utf-8"))
